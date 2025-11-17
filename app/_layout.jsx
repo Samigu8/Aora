@@ -1,14 +1,13 @@
-import { StyleSheet, Text, View } from 'react-native'
-import { Slot, Stack } from 'expo-router'
-import React from 'react'
+import { Stack } from 'expo-router';
 
-const RootLayout = () => {
-    return (
-        <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-        </Stack>
-
-    )
+export default function RootLayout() {
+  return (
+    <Stack
+      screenOptions={{
+        headerStyle: { backgroundColor: '#1e293b' },
+        headerTintColor: '#fff',
+        headerTitleStyle: { fontWeight: 'bold' },
+      }}
+    />
+  );
 }
-
-export default RootLayout
