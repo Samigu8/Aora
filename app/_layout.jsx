@@ -8,6 +8,7 @@ export default function RootLayout() {
         headerStyle: { backgroundColor: '#1e293b' },
         headerTintColor: '#fff',
         headerTitleStyle: { fontWeight: 'bold' },
+        headerShown: false,
       }}
     />
   );
