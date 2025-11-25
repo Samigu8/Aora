@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { ResizeMode, Video } from "expo-av";
 import * as Animatable from "react-native-animatable";
 import {
   FlatList,
@@ -7,29 +6,32 @@ import {
   ImageBackground,
   TouchableOpacity,
 } from "react-native";
+import { VideoView, useVideoPlayer } from "expo-video";
 
 import { icons } from "../constants";
 
 const zoomIn = {
-  0: {
-    scale: 0.9,
-  },
-  1: {
-    scale: 1,
-  },
+  0: { scale: 0.9 },
+  1: { scale: 1 },
 };
 
 const zoomOut = {
-  0: {
-    scale: 1,
-  },
-  1: {
-    scale: 0.9,
-  },
+  0: { scale: 1 },
+  1: { scale: 0.9 },
 };
 
 const TrendingItem = ({ activeItem, item }) => {
   const [play, setPlay] = useState(false);
+
+  // Create a player instance for this video
+  const player = useVideoPlayer(item.video, (player) => {
+    player.loop = false;
+    if (play) {
+      player.play();
+    } else {
+      player.pause();
+    }
+  });
 
   return (
     <Animatable.View
@@ -38,17 +40,12 @@ const TrendingItem = ({ activeItem, item }) => {
       duration={500}
     >
       {play ? (
-        <Video
-          source={{ uri: item.video }}
-          className="w-52 h-72 rounded-[33px] mt-3 bg-white/10"
-          resizeMode={ResizeMode.CONTAIN}
-          useNativeControls
-          shouldPlay
-          onPlaybackStatusUpdate={(status) => {
-            if (status.didJustFinish) {
-              setPlay(false);
-            }
-          }}
+        <VideoView
+          player={player}
+          style={{ width: 208, height: 288, borderRadius: 33, marginTop: 12 }}
+          nativeControls
+          allowsFullscreen
+          allowsPictureInPicture
         />
       ) : (
         <TouchableOpacity
@@ -57,13 +54,10 @@ const TrendingItem = ({ activeItem, item }) => {
           onPress={() => setPlay(true)}
         >
           <ImageBackground
-            source={{
-              uri: item.thumbnail,
-            }}
+            source={{ uri: item.thumbnail }}
             className="w-52 h-72 rounded-[33px] my-5 overflow-hidden shadow-lg shadow-black/40"
             resizeMode="cover"
           />
-
           <Image
             source={icons.play}
             className="w-12 h-12 absolute"
@@ -76,11 +70,11 @@ const TrendingItem = ({ activeItem, item }) => {
 };
 
 const Trending = ({ posts }) => {
-  const [activeItem, setActiveItem] = useState(posts[0]);
+  const [activeItem, setActiveItem] = useState(posts[0]?.$id);
 
   const viewableItemsChanged = ({ viewableItems }) => {
     if (viewableItems.length > 0) {
-      setActiveItem(viewableItems[0].key);
+      setActiveItem(viewableItems[0].item.$id);
     }
   };
 
@@ -93,9 +87,7 @@ const Trending = ({ posts }) => {
         <TrendingItem activeItem={activeItem} item={item} />
       )}
       onViewableItemsChanged={viewableItemsChanged}
-      viewabilityConfig={{
-        itemVisiblePercentThreshold: 70,
-      }}
+      viewabilityConfig={{ itemVisiblePercentThreshold: 70 }}
       contentOffset={{ x: 170 }}
     />
   );

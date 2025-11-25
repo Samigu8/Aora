@@ -24,6 +24,8 @@
     "expo-linking": "~8.0.9",
     "expo-router": "~6.0.15",
     "expo-status-bar": "~3.0.8",
+    "expo-video": "~3.0.14",
+    "expo-video-thumbnails": "~10.0.7",
     "install": "^0.13.0",
     "metro-minify-terser": "^0.83.3",
     "nativewind": "^4.2.1",

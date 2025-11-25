@@ -1,21 +1,66 @@
-import { View, Text, FlatList, Image } from 'react-native'
-import React from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { View, Text, FlatList, Image, RefreshControl } from 'react-native';
+import { useState, useEffect } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { images } from '../../constants'
-import SearchInput from '../../components/SearchInput'
-import Trending from '../../components/Trending'
-import EmptyState from '../../components/EmptyState'
+import { images } from '../../constants';
+import SearchInput from '../../components/SearchInput';
+import Trending from '../../components/Trending';
+import EmptyState from '../../components/EmptyState';
+import { supabase } from '../../lib/supabase';
 
 const Home = () => {
+  const [refreshing, setRefreshing] = useState(false);
+  const [posts, setPosts] = useState([]);
+
+  // Fetch videos from Supabase bucket
+  const fetchVideos = async () => {
+    const { data, error } = await supabase.storage.from('videos').list();
+
+    if (error) {
+      console.error('Error fetching videos:', error);
+      return;
+    }
+
+    // Map each file to a usable object
+const mapped = data
+  // filter only .mp4 files
+  .filter((file) => file.name.endsWith(".mp4"))
+  .map((file) => {
+    const { data: { publicUrl } } = supabase
+      .storage
+      .from("videos")
+      .getPublicUrl(file.name);
+
+    const encodedUrl = encodeURI(publicUrl);
+
+    return {
+      $id: file.name,
+      thumbnail: "https://placehold.co/300x400?text=Video",
+      video: encodedUrl,
+    };
+  });
+
+// If no videos, posts will be []
+
+    setPosts(mapped);
+  };
+
+  useEffect(() => {
+    fetchVideos();
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchVideos();
+    setRefreshing(false);
+  };
+
   return (
-    <SafeAreaView className="bg-primary">
+    <SafeAreaView className="bg-primary h-full">
       <FlatList
-        data={[{ id: 1 }, { id: 2 }, { id: 3 }]}
-        keyExtractor={(item) => item.$id}
-        renderItem={({ item }) => (
-          <Text className="text-3xl text-white">{ item.id }</Text>
-        )}
+        data={posts}
+        keyExtractor={(item) => item.$id.toString()}
+        renderItem={null} // we only render via ListHeaderComponent
         ListHeaderComponent={() => (
           <View className="my-6 px-4 space-y-6">
             <View className="justify-between flex-row items-start mb-6">
@@ -34,19 +79,19 @@ const Home = () => {
                   className="w-9 h-10"
                   resizeMode="contain"
                 />
-              <View/>
               </View>
             </View>
 
             <SearchInput />
 
-            <View className="w-full flex-1 pt-5 pb-8">
-              <Text className="text-gray-200 text-lg font-pregular mb-3">
-                Latest Videos
-              </Text>
-
-              <Trending posts={[{ id : 1}, { id: 2 }, { id: 3 }] ?? []} />
-            </View>
+            {posts.length > 0 && (
+              <View className="w-full flex-1 pt-5 pb-8">
+                <Text className="text-gray-200 text-lg font-pregular mb-3">
+                  Latest Videos
+                </Text>
+                <Trending posts={posts} />
+              </View>
+            )}
           </View>
         )}
         ListEmptyComponent={() => (
@@ -55,9 +100,12 @@ const Home = () => {
             subtitle="Be the first to add a new video"
           />
         )}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
     </SafeAreaView>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
