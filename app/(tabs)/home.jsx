@@ -1,66 +1,30 @@
-import { View, Text, FlatList, Image, RefreshControl } from 'react-native';
-import { useState, useEffect } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, FlatList, Image, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { images } from '../../constants';
-import SearchInput from '../../components/SearchInput';
-import Trending from '../../components/Trending';
-import EmptyState from '../../components/EmptyState';
-import { supabase } from '../../lib/supabase';
+import { images } from "../../constants";
+import SearchInput from "../../components/SearchInput";
+import Trending from "../../components/Trending";
+import EmptyState from "../../components/EmptyState";
+import VideoCard from "../../components/VideoCard";
+import { useSupabase } from "../../hooks/useSupabase";  // 👈 import hook
 
 const Home = () => {
-  const [refreshing, setRefreshing] = useState(false);
-  const [posts, setPosts] = useState([]);
-
-  // Fetch videos from Supabase bucket
-  const fetchVideos = async () => {
-    const { data, error } = await supabase.storage.from('videos').list();
-
-    if (error) {
-      console.error('Error fetching videos:', error);
-      return;
-    }
-
-    // Map each file to a usable object
-const mapped = data
-  // filter only .mp4 files
-  .filter((file) => file.name.endsWith(".mp4"))
-  .map((file) => {
-    const { data: { publicUrl } } = supabase
-      .storage
-      .from("videos")
-      .getPublicUrl(file.name);
-
-    const encodedUrl = encodeURI(publicUrl);
-
-    return {
-      $id: file.name,
-      thumbnail: "https://placehold.co/300x400?text=Video",
-      video: encodedUrl,
-    };
-  });
-
-// If no videos, posts will be []
-
-    setPosts(mapped);
-  };
-
-  useEffect(() => {
-    fetchVideos();
-  }, []);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchVideos();
-    setRefreshing(false);
-  };
+  const { data: posts, loading, refetch } = useSupabase();
 
   return (
     <SafeAreaView className="bg-primary h-full">
       <FlatList
         data={posts}
-        keyExtractor={(item) => item.$id.toString()}
-        renderItem={null} // we only render via ListHeaderComponent
+        keyExtractor={(item) => item.$id}
+        renderItem={({ item }) => (
+          <VideoCard
+            title={item.title}
+            creator={item.creator}
+            avatar={item.avatar}
+            thumbnail={item.thumbnail}
+            video={item.video}
+          />
+        )}
         ListHeaderComponent={() => (
           <View className="my-6 px-4 space-y-6">
             <View className="justify-between flex-row items-start mb-6">
@@ -101,7 +65,7 @@ const mapped = data
           />
         )}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={loading} onRefresh={refetch} />
         }
       />
     </SafeAreaView>
