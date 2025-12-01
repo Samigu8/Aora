@@ -7,7 +7,7 @@ import SearchInput from "../../components/SearchInput";
 import Trending from "../../components/Trending";
 import EmptyState from "../../components/EmptyState";
 import VideoCard from "../../components/VideoCard";
-import { useSupabase } from "../../hooks/useSupabase";  // 👈 import hook
+import { useSupabase } from "../../hooks/useSupabase";
 
 const Home = () => {
   const { data: posts, loading, refetch } = useSupabase();
