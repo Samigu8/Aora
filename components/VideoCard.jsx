@@ -6,14 +6,8 @@ import { icons } from "../constants";
 const VideoCard = ({ title, creator, avatar, thumbnail, video }) => {
   const [play, setPlay] = useState(false);
 
-  // Create a player instance for this video
   const player = useVideoPlayer(video, (player) => {
     player.loop = false;
-    if (play) {
-      player.play();
-    } else {
-      player.pause();
-    }
   });
 
   return (

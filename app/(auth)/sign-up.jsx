@@ -34,8 +34,6 @@ const SignUp = () => {
     if (error) {
       setError(error.message);
     } else {
-      console.log('Signed up user:', data.user);
-
       // If email confirmation is enabled in Supabase, user must confirm before login
       // You can redirect to sign-in or home depending on your flow
       router.replace('/home'); 

@@ -29,7 +29,6 @@ const SignIn = () => {
     if (error) {
       setError(error.message);
     } else {
-      console.log('Logged in user:', data.user);
       router.replace('/home'); // navigate to home
     }
 

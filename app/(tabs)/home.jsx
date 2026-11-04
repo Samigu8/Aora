@@ -1,6 +1,6 @@
 import { View, Text, FlatList, Image, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRef } from "react";
+import { useEffect, useState } from "react";
 
 import { images } from "../../constants";
 import SearchInput from "../../components/SearchInput";
@@ -8,19 +8,23 @@ import Trending from "../../components/Trending";
 import EmptyState from "../../components/EmptyState";
 import VideoCard from "../../components/VideoCard";
 import { useSupabase } from "../../hooks/useSupabase";
+import { supabase } from "../../lib/supabase";
 
 const Home = () => {
   const { data: posts, loading, refetch } = useSupabase();
 
-  // Track which items are currently visible
-  const viewableItems = useRef([]);
-  const onViewableItemsChanged = useRef(({ viewableItems: items }) => {
-    viewableItems.current = items.map((entry) => entry.item.$id);
-  }).current;
+  const [username, setUsername] = useState("User");
 
-  const viewabilityConfig = {
-    itemVisiblePercentThreshold: 50, // at least 50% visible to count
-  };
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (error) {
+        console.error("Error fetching user:", error.message);
+        return;
+      }
+
+      setUsername(data.user?.user_metadata?.username || "User");
+    });
+  }, []);
 
   return (
     <SafeAreaView className="bg-primary h-full">
@@ -34,8 +38,6 @@ const Home = () => {
             avatar={item.avatar}
             thumbnail={item.thumbnail}
             video={item.video}
-            // 👇 Pass down whether this video should be playing
-            isPlaying={viewableItems.current.includes(item.$id)}
           />
         )}
         ListHeaderComponent={() => (
@@ -46,7 +48,7 @@ const Home = () => {
                   Welcome back
                 </Text>
                 <Text className="text-2xl font-psemibold text-white">
-                  JSMastery
+                  {username}
                 </Text>
               </View>
 
@@ -80,9 +82,6 @@ const Home = () => {
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={refetch} />
         }
-        // 👇 Add viewability tracking
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
       />
     </SafeAreaView>
   );

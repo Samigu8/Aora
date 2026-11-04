@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase";
 import { router } from "expo-router";
 import VideoCard from "../../components/VideoCard";
 import InfoBox from "../../components/InfoBox";
+import { mapVideoRow } from "../../hooks/useSupabase";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -32,14 +33,14 @@ export default function Profile() {
     if (error) {
       console.error("Error fetching posts:", error.message);
     } else {
-      setPosts(data);
+      setPosts(data.map(mapVideoRow));
     }
   };
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.log("Error signing out:", error.message);
+      console.error("Error signing out:", error.message);
     } else {
       router.replace("/");
     }
@@ -64,7 +65,6 @@ export default function Profile() {
         {/* Info Boxes */}
         <View className="flex-row space-x-4 mb-4 justify-center">
           <InfoBox title={posts.length.toString()} subtitle="Posts  " />
-          <InfoBox title="1.2k" subtitle="Views" />
         </View>
 
         {/* Logout Button */}
@@ -79,7 +79,7 @@ export default function Profile() {
       {/* Video Grid */}
       <FlatList
         data={posts}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.$id}
         renderItem={({ item }) => (
           <VideoCard
             title={item.title}
