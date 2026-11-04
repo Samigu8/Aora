@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { VideoView, useVideoPlayer } from "expo-video"; // ✅ new API
 import { icons } from "../constants";
@@ -9,6 +9,14 @@ const VideoCard = ({ title, creator, avatar, thumbnail, video }) => {
   const player = useVideoPlayer(video, (player) => {
     player.loop = false;
   });
+
+  useEffect(() => {
+    if (play) {
+      player.play();
+    } else {
+      player.pause();
+    }
+  }, [play, player]);
 
   return (
     <View className="flex flex-col items-center px-4 mb-14">

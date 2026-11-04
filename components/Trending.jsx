@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as Animatable from "react-native-animatable";
 import {
   FlatList,
@@ -23,15 +23,17 @@ const zoomOut = {
 const TrendingItem = ({ activeItem, item }) => {
   const [play, setPlay] = useState(false);
 
-  // Create a player instance for this video
   const player = useVideoPlayer(item.video, (player) => {
     player.loop = false;
+  });
+
+  useEffect(() => {
     if (play) {
       player.play();
     } else {
       player.pause();
     }
-  });
+  }, [play, player]);
 
   return (
     <Animatable.View
